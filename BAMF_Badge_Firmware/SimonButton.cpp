@@ -20,6 +20,10 @@ void SimonButton::off() {
     noTone(TONE_PIN);
 }
 
+bool SimonButton::read() {
+    return _btn_obj.read();
+}
+
 bool SimonButton::check() {
     if(_btn_obj.read()) {
         on();
@@ -30,6 +34,10 @@ bool SimonButton::check() {
         off();
         return false;
     }
+}
+
+bool SimonButton::check_hold(long hold_time) {
+    return _btn_obj.pressedFor(hold_time);
 }
 
 void SimonButton::_play_tone() {

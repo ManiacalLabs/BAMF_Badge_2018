@@ -29,7 +29,9 @@
 #define SEQ_ON_LEN 500
 #define SEQ_BTWN_ON 200
 
-byte _mode = MODE_PLAY;
+#define PLAY_HOLD_TIME 2000
+
+byte _mode = MODE_DEMO;
 
 
 //define buttons
@@ -52,6 +54,13 @@ void all_off(){
   btns[3].off();
 }
 
+void all_on(){
+  btns[0].on();
+  btns[1].on();
+  btns[2].on();
+  btns[3].on();
+}
+
 void check_all(){
   btns[0].check();
   btns[1].check();
@@ -59,11 +68,39 @@ void check_all(){
   btns[3].check();
 }
 
+bool read_all(){
+  bool result = false;
+  result |= btns[0].read();
+  result |= btns[1].read();
+  result |= btns[2].read();
+  result |= btns[3].read();
+  return result;
+}
+
+void check_play_hold() {
+  Serial.println("check play");
+  read_all();
+  if(btns[0].check_hold(PLAY_HOLD_TIME) && btns[3].check_hold(PLAY_HOLD_TIME)) {
+    init_play();
+    _mode = MODE_PLAY;
+
+    all_on();
+    tone(TONE_PIN, NOTE_FAIL, 500);
+
+    while(read_all()){ delay(5); }
+
+    all_off();
+    delay(1000);
+  }
+}
+
 void demo(){
   all_off();
   delay(SEQ_BTWN_ON);
   btns[random(0, 4)].on(true);
   delay(SEQ_ON_LEN);
+
+  check_play_hold();
 }
 
 void init_play() {
@@ -71,6 +108,7 @@ void init_play() {
   memset(play_seq, 0, SEQ_LEN);
   play_seq_pos = seq_pos = 0;
   randomSeed(0);
+  Serial.println("Begin Play!");
 }
 
 void play() {
@@ -141,7 +179,7 @@ void play() {
         }
       }
       delay(1000);
-      init_play();
+      _mode = MODE_DEMO;
       return;
     }
     else {
@@ -161,7 +199,8 @@ void play() {
       all_off();
       delay(250);
     }
-    init_play();
+    _mode = MODE_DEMO;
+    return;
   }
 }
 

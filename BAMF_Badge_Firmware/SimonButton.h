@@ -17,7 +17,9 @@ class SimonButton
 {
   public:
     SimonButton(byte btn, byte led, unsigned int tone, byte tone_pin);
+    bool read();
     bool check();
+    bool check_hold(long hold_time);
     void on(bool tone);
     void on() { on(true); }
     void off();
