@@ -14,12 +14,12 @@
 #define LED_B 20 //A2
 #define LED_Y 21 //A3
 
-#define NOTE_R 440 // A4
-#define NOTE_G 165 // E3
-#define NOTE_B 330 // E4
-#define NOTE_Y 277 // C#4
+#define NOTE_R 2093 // A4
+#define NOTE_G 2637 // E3
+#define NOTE_B 3136 // E4
+#define NOTE_Y 3961 // C#4
 
-#define NOTE_FAIL 65 //C2
+#define NOTE_FAIL 4186 //C2
 
 #define SEQ_LEN 6
 
@@ -62,7 +62,7 @@ void check_all(){
 void demo(){
   all_off();
   delay(SEQ_BTWN_ON);
-  btns[random(0, 4)].on(false);
+  btns[random(0, 4)].on(true);
   delay(SEQ_ON_LEN);
 }
 
@@ -77,17 +77,11 @@ void play() {
   // all_off();
   Serial.println("play");
 
-  if(seq_pos >= SEQ_LEN) {
-    Serial.println("reset");
-    seq_pos = 0;
-    init_play();
-    return;
-  }
-
   // Add to and play sequence
   seq[seq_pos] = random(0, 4);
 
   static byte i;
+  static byte b;
   for(i=0; i<=seq_pos; i++) {
     Serial.print(seq[i]);
     Serial.print(" ");
@@ -129,35 +123,55 @@ void play() {
     press = -1;
   }
 
-  if(result){ Serial.println("WIN!"); }
-  else{ Serial.println("FAIL!"); }
-
-  // if(!result){
-  //   for(i=0; i<2; i++){
-  //     tone(TONE_PIN, NOTE_FAIL);
-  //     btns[0].on(false);
-  //     btns[1].on(false);
-  //     btns[2].on(false);
-  //     btns[3].on(false);
-  //     delay(250);
-  //     noTone(TONE_PIN);
-  //     all_off();
-  //   }
-
-  //   init_play();
-  // }
-
-  seq_pos++;
+  if(result){
+    seq_pos++;
+    if(seq_pos >= SEQ_LEN) {
+      Serial.println("WIN!");
+      btns[0].on(false);
+      btns[1].on(false);
+      btns[2].on(false);
+      btns[3].on(false);
+      delay(500);
+      all_off();
+      for(i=0; i<4; i++){
+        for(b=0; b<4; b++){
+          btns[b].on();
+          delay(200);
+          btns[b].off();
+        }
+      }
+      delay(1000);
+      init_play();
+      return;
+    }
+    else {
+      delay(500);
+    }
+  }
+  else{
+    Serial.println("FAIL");
+    for(i=0; i<4; i++){
+      //tone(TONE_PIN, NOTE_FAIL);
+      btns[0].on(false);
+      btns[1].on(false);
+      btns[2].on(false);
+      btns[3].on(false);
+      delay(500);
+      //noTone(TONE_PIN);
+      all_off();
+      delay(250);
+    }
+    init_play();
+  }
 }
 
 void setup() {
-  Serial.begin(115200);\
-  while(!Serial){}
+  Serial.begin(115200);
+  // while(!Serial){}
   init_play();
 }
 
 void loop() {
-  Serial.println(seq_pos);
   switch(_mode) {
     case MODE_DEMO:
       demo();

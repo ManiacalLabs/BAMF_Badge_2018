@@ -1,0 +1,6 @@
+{
+    "board": "adafruit:avr:feather32u4",
+    "port": "COM17",
+    "sketch": "BAMF_Badge_Firmware\\BAMF_Badge_Firmware.ino",
+    "output": "../ArduinoOutput"
+}
