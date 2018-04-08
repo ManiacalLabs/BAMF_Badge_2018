@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name BAMF_2018_Badge)(type Legacy)(uri G:/dev/BAMF_Badge_2018/PCB/lib/BAMF_2018_Badge.lib)(options "")(descr ""))
+  (lib (name lsf0102dcur)(type Legacy)(uri G:/dev/BAMF_Badge_2018/PCB/lib/lsf0102dcur.lib)(options "")(descr ""))
+  (lib (name TriSelectSolderJumper)(type Legacy)(uri G:/dev/BAMF_Badge_2018/PCB/lib/TriSelectSolderJumper.lib)(options "")(descr ""))
+)

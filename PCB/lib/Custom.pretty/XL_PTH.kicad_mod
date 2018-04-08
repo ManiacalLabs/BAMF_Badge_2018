@@ -1,0 +1,9 @@
+(module XL_PTH (layer F.Cu) (tedit 5AC98945)
+  (fp_text reference REF** (at 3 3) (layer F.SilkS) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value XL_PTH (at 0 -4) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (pad 1 thru_hole circle (at 0 0) (size 3.5 3.5) (drill 3) (layers *.Cu *.Mask))
+)
