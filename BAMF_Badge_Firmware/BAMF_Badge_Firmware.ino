@@ -4,10 +4,10 @@
 // Pins for Adafruit 32u4 RFM69HCW Feather
 #define TONE_PIN 6
 
-#define BTN_R 9
-#define BTN_G 10
-#define BTN_B 11
-#define BTN_Y 12
+#define BTN_R 10
+#define BTN_G 12
+#define BTN_B 9
+#define BTN_Y 11
 
 #define LED_R 18 //A0
 #define LED_G 19 //A1
@@ -19,7 +19,7 @@
 #define NOTE_B 3136 // E4
 #define NOTE_Y 3961 // C#4
 
-#define NOTE_FAIL 4186 //C2
+#define NOTE_FAIL 460 //C2
 
 #define SEQ_LEN 6
 
@@ -29,7 +29,7 @@
 #define SEQ_ON_LEN 500
 #define SEQ_BTWN_ON 200
 
-#define PLAY_HOLD_TIME 2000
+#define PLAY_HOLD_TIME 1200
 
 byte _mode = MODE_DEMO;
 
@@ -80,7 +80,7 @@ bool read_all(){
 void check_play_hold() {
   Serial.println("check play");
   read_all();
-  if(btns[0].check_hold(PLAY_HOLD_TIME) && btns[3].check_hold(PLAY_HOLD_TIME)) {
+  if(btns[0].check_hold(PLAY_HOLD_TIME) && btns[1].check_hold(PLAY_HOLD_TIME)) {
     init_play();
     _mode = MODE_PLAY;
 
@@ -95,9 +95,13 @@ void check_play_hold() {
 }
 
 void demo(){
+  static byte c = 0;
   all_off();
   delay(SEQ_BTWN_ON);
-  btns[random(0, 4)].on(true);
+  // btns[random(0, 4)].on(false);
+  btns[c].on(false);
+  c++;
+  if(c>=4){c = 0;}
   delay(SEQ_ON_LEN);
 
   check_play_hold();
@@ -189,13 +193,13 @@ void play() {
   else{
     Serial.println("FAIL");
     for(i=0; i<4; i++){
-      //tone(TONE_PIN, NOTE_FAIL);
+      tone(TONE_PIN, NOTE_FAIL);
       btns[0].on(false);
       btns[1].on(false);
       btns[2].on(false);
       btns[3].on(false);
       delay(500);
-      //noTone(TONE_PIN);
+      noTone(TONE_PIN);
       all_off();
       delay(250);
     }
@@ -208,6 +212,7 @@ void setup() {
   Serial.begin(115200);
   // while(!Serial){}
   init_play();
+  randomSeed(analogRead(4));
 }
 
 void loop() {
@@ -219,4 +224,6 @@ void loop() {
       play();
       break;
   }
+
+  // check_all();
 }

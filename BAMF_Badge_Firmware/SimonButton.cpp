@@ -41,5 +41,5 @@ bool SimonButton::check_hold(long hold_time) {
 }
 
 void SimonButton::_play_tone() {
-    // tone(TONE_PIN, _tone);
+    tone(TONE_PIN, _tone);
 }
