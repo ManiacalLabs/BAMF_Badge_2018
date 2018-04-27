@@ -17,7 +17,7 @@ void SimonButton::on(bool tone) {
 
 void SimonButton::off() {
     led_off(_led);
-    noTone(TONE_PIN);
+    stop_tone();
 }
 
 bool SimonButton::read() {
@@ -41,5 +41,5 @@ bool SimonButton::check_hold(long hold_time) {
 }
 
 void SimonButton::_play_tone() {
-    tone(TONE_PIN, _tone);
+    play_tone(_tone);
 }

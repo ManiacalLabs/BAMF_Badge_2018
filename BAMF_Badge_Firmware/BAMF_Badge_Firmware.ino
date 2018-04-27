@@ -85,7 +85,7 @@ void check_play_hold() {
     _mode = MODE_PLAY;
 
     all_on();
-    tone(TONE_PIN, NOTE_FAIL, 500);
+    play_tone_ms(NOTE_FAIL, 500);
 
     while(read_all()){ delay(5); }
 
@@ -193,13 +193,13 @@ void play() {
   else{
     Serial.println("FAIL");
     for(i=0; i<4; i++){
-      tone(TONE_PIN, NOTE_FAIL);
+      play_tone(NOTE_FAIL);
       btns[0].on(false);
       btns[1].on(false);
       btns[2].on(false);
       btns[3].on(false);
       delay(500);
-      noTone(TONE_PIN);
+      stop_tone();
       all_off();
       delay(250);
     }

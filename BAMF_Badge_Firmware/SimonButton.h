@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "Button.h"
 
+
 #define led_on(pin) digitalWrite(pin, HIGH)
 #define led_off(pin) digitalWrite(pin, LOW)
 
@@ -12,6 +13,12 @@
 #define BTN_DEBOUNCE 20
 
 #define TONE_PIN 6
+
+// #define play_tone(TONE) tone(TONE_PIN, TONE)
+// #define play_tone(TONE, TIME) tone(TONE_PIN, TONE, TIME)
+#define play_tone(TONE) tone(5, TONE)
+#define play_tone_ms(TONE, TIME) tone(5, TONE, TIME)
+#define stop_tone() noTone(TONE_PIN)
 
 class SimonButton
 {
