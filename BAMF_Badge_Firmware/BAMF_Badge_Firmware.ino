@@ -1,8 +1,8 @@
 #include "SimonButton.h"
 #include "util.h"
+#include "rf.h"
 
 // Pins for Adafruit 32u4 RFM69HCW Feather
-#define TONE_PIN 6
 
 #define BTN_R 10
 #define BTN_G 12
@@ -61,11 +61,20 @@ void all_on(){
   btns[3].on();
 }
 
-void check_all(){
-  btns[0].check();
-  btns[1].check();
-  btns[2].check();
-  btns[3].check();
+bool btn_states[4] = {false, false, false, false};
+char btn_state_str[5] = {0,0,0,0,0};
+bool check_all(){
+  btn_states[0] = btns[0].check();
+  btn_states[1] = btns[1].check();
+  btn_states[2] = btns[2].check();
+  btn_states[3] = btns[3].check();
+
+  btn_state_str[0] = (btn_states[0] ? 'R' : '_');
+  btn_state_str[1] = (btn_states[1] ? 'G' : '_');
+  btn_state_str[2] = (btn_states[2] ? 'B' : '_');
+  btn_state_str[3] = (btn_states[3] ? 'Y' : '_');
+
+  return (btn_states[0] | btn_states[1] | btn_states[2] | btn_states[3]);
 }
 
 bool read_all(){
@@ -211,19 +220,29 @@ void play() {
 void setup() {
   Serial.begin(115200);
   // while(!Serial){}
+
+  // rf_setup();
+
   init_play();
   randomSeed(analogRead(4));
 }
 
 void loop() {
-  switch(_mode) {
-    case MODE_DEMO:
-      demo();
-      break;
-    case MODE_PLAY:
-      play();
-      break;
+  // switch(_mode) {
+  //   case MODE_DEMO:
+  //     demo();
+  //     break;
+  //   case MODE_PLAY:
+  //     play();
+  //     break;
+  // }
+
+  if(check_all()) {
+    Serial.print("Send: ");
+    Serial.println(btn_state_str);
+    send(btn_state_str, 5);
   }
 
-  // check_all();
+
+  // recv();
 }
