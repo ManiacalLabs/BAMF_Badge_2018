@@ -219,9 +219,9 @@ void play() {
 
 void setup() {
   Serial.begin(115200);
-  // while(!Serial){}
+  while(!Serial){}
 
-  // rf_setup();
+  rf_setup();
 
   init_play();
   randomSeed(analogRead(4));
@@ -238,11 +238,18 @@ void loop() {
   // }
 
   if(check_all()) {
-    Serial.print("Send: ");
+    Serial.print("SEND: ");
     Serial.println(btn_state_str);
     send(btn_state_str, 5);
   }
 
+  char recv_buf[MSG_LEN + 1];
+  uint8_t len = MSG_LEN;
 
-  // recv();
+  memset(recv_buf, 0, MSG_LEN + 1);
+
+  if(recv(recv_buf, &len)) {
+    Serial.print("RECV: ");
+    Serial.println(recv_buf);
+  }
 }
