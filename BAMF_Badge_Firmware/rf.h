@@ -51,10 +51,13 @@ void rf_setup()
 }
 
 void send(char *c, uint8_t l) {
+    Serial.print("Send: ");
+    Serial.println(c);
+
     rfman.sendtoWait(c, l, RH_BROADCAST_ADDRESS);
 }
 
-#define MSG_LEN 5
+#define MSG_LEN 32
 bool recv(char * buf, uint8_t * len) {
     // uint8_t buf[MSG_LEN];
     // uint8_t len = sizeof(buf);

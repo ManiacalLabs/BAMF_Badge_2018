@@ -22,9 +22,11 @@
 #define NOTE_FAIL 460 //C2
 
 #define SEQ_LEN 6
+#define SEQ_STR_LEN SEQ_LEN + 1
 
 #define MODE_DEMO 0
 #define MODE_PLAY 1
+#define MODE_PLAY_RECV 2
 
 #define SEQ_ON_LEN 500
 #define SEQ_BTWN_ON 200
@@ -32,6 +34,8 @@
 #define PLAY_HOLD_TIME 1200
 
 byte _mode = MODE_DEMO;
+
+char order[] = "RGBY";
 
 
 //define buttons
@@ -42,8 +46,8 @@ SimonButton btns[] = {
   SimonButton(BTN_Y, LED_Y, NOTE_Y, TONE_PIN)
 };
 
-byte seq[SEQ_LEN];
-byte play_seq[SEQ_LEN];
+char seq_str[SEQ_STR_LEN];
+char play_seq_str[SEQ_STR_LEN];
 byte seq_pos;
 byte play_seq_pos;
 
@@ -87,7 +91,6 @@ bool read_all(){
 }
 
 void check_play_hold() {
-  Serial.println("check play");
   read_all();
   if(btns[0].check_hold(PLAY_HOLD_TIME) && btns[1].check_hold(PLAY_HOLD_TIME)) {
     init_play();
@@ -117,32 +120,57 @@ void demo(){
 }
 
 void init_play() {
-  memset(seq, 0, SEQ_LEN);
-  memset(play_seq, 0, SEQ_LEN);
+  send("P", 1); // announce play start
+  memset(seq_str, 0, SEQ_STR_LEN);
+  memset(play_seq_str, 0, SEQ_STR_LEN);
   play_seq_pos = seq_pos = 0;
   randomSeed(0);
   Serial.println("Begin Play!");
 }
 
+void init_play_recv() {
+  memset(seq_str, 0, SEQ_STR_LEN);
+  memset(play_seq_str, 0, SEQ_STR_LEN);
+  play_seq_pos = seq_pos = 0;
+}
+
 void play() {
   // all_off();
-  Serial.println("play");
 
-  // Add to and play sequence
-  seq[seq_pos] = random(0, 4);
+  if(_mode == MODE_PLAY) {
+    // Add to and play sequence
+    seq_str[seq_pos] = order[ random(0, 4)];
+
+    send(seq_str, SEQ_STR_LEN);
+    Serial.print("Seq: ");
+    Serial.println(seq_str);
+  }
 
   static byte i;
   static byte b;
   for(i=0; i<=seq_pos; i++) {
-    Serial.print(seq[i]);
-    Serial.print(" ");
+    switch(seq_str[i]) {
+      case 'R':
+        b = 0;
+        break;
+      case 'G':
+        b = 1;
+        break;
+      case 'B':
+        b = 2;
+        break;
+      case 'Y':
+        b = 3;
+        break;
+      default:
+        b = 0;
+        break;
+    }
     delay(SEQ_BTWN_ON);
-    btns[seq[i]].on();
+    btns[b].on();
     delay(SEQ_ON_LEN);
-    btns[seq[i]].off();
+    btns[b].off();
   }
-
-  Serial.println("\n");
 
   static long timeout;
   static int8_t press;
@@ -161,12 +189,18 @@ void play() {
 
     if(press >= 0) {
       timeout = millis(); // reset timeout
-      play_seq[play_seq_pos] = press;
+      play_seq_str[play_seq_pos] = order[press];
 
-      //if enough presses, check
-      if(play_seq_pos >= seq_pos) {
-        result = array_cmp(seq, play_seq, SEQ_LEN, SEQ_LEN);
-        break; // exit loop, we're done
+      if(array_cmp(seq_str, play_seq_str, play_seq_pos+1, play_seq_pos+1))
+      {
+        if(play_seq_pos >= seq_pos) {
+          result = true;
+          break; //success with full sequence, exit
+        }
+      }
+      else {
+        result = false;
+        break; // already failed, exit immediately
       }
 
       play_seq_pos++;
@@ -223,25 +257,26 @@ void setup() {
 
   rf_setup();
 
-  init_play();
+  // init_play();
   randomSeed(analogRead(4));
 }
 
 void loop() {
-  // switch(_mode) {
-  //   case MODE_DEMO:
-  //     demo();
-  //     break;
-  //   case MODE_PLAY:
-  //     play();
-  //     break;
-  // }
-
-  if(check_all()) {
-    Serial.print("SEND: ");
-    Serial.println(btn_state_str);
-    send(btn_state_str, 5);
+  switch(_mode) {
+    case MODE_DEMO:
+      demo();
+      break;
+    case MODE_PLAY:
+    case MODE_PLAY_RECV:
+      play();
+      break;
   }
+
+  // if(check_all()) {
+  //   Serial.print("SEND: ");
+  //   Serial.println(btn_state_str);
+  //   send(btn_state_str, 5);
+  // }
 
   char recv_buf[MSG_LEN + 1];
   uint8_t len = MSG_LEN;
@@ -251,5 +286,12 @@ void loop() {
   if(recv(recv_buf, &len)) {
     Serial.print("RECV: ");
     Serial.println(recv_buf);
+    if(recv_buf[0] == 'P'){
+      _mode = MODE_PLAY_RECV;
+    }
+    else {
+      //new sequence, copy over
+      memcpy(seq_str, recv_buf, SEQ_STR_LEN);
+    }
   }
 }
