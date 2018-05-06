@@ -14,16 +14,17 @@
 #define LED_B 20 //A2
 #define LED_Y 21 //A3
 
-#define NOTE_R 2093 // A4
-#define NOTE_G 2637 // E3
-#define NOTE_B 3136 // E4
-#define NOTE_Y 3961 // C#4
+#define NOTE_R 523 // C5
+#define NOTE_G 659 // E5
+#define NOTE_B 784 // G5
+#define NOTE_Y 440 // B5
 
-#define NOTE_FAIL 460 //C2
+#define NOTE_FAIL 69 //G1
+#define NOTE_START 1047 //C6
 
 #define RAND_SEED_PIN 4 //A4
 
-#define SEQ_LEN 6
+#define SEQ_LEN 32
 #define SEQ_STR_LEN SEQ_LEN + 1
 
 #define MODE_DEMO 0
@@ -94,11 +95,31 @@ bool read_all(){
 
 void do_start_play() {
   all_on();
-  play_tone_ms(NOTE_FAIL, 500);
+  play_tone_ms(NOTE_START, 500);
 
   while(read_all()){ delay(5); }
 
+  stop_tone();
   all_off();
+  delay(250);
+
+  all_on();
+  play_tone(NOTE_START);
+  delay(500);
+  all_off();
+  delay(250);
+
+  all_on();
+  play_tone(NOTE_START);
+  delay(500);
+  all_off();
+  delay(250);
+
+  all_on();
+  play_tone(NOTE_START);
+  delay(500);
+  all_off();
+
   delay(1000);
 }
 
@@ -253,6 +274,9 @@ void setup() {
 }
 
 void loop() {
+  // check_all();
+  // return;
+
   switch(_mode) {
     case MODE_DEMO:
       demo();
@@ -263,16 +287,10 @@ void loop() {
       break;
   }
 
-  // if(check_all()) {
-  //   Serial.print("SEND: ");
-  //   Serial.println(btn_state_str);
-  //   send(btn_state_str, 5);
-  // }
+  char recv_buf[RF_MSG_LEN + 1];
+  uint8_t len = RF_MSG_LEN;
 
-  char recv_buf[MSG_LEN + 1];
-  uint8_t len = MSG_LEN;
-
-  memset(recv_buf, 0, MSG_LEN + 1);
+  memset(recv_buf, 0, RF_MSG_LEN + 1);
 
   if(recv(recv_buf, &len)) {
     if(len >= SEQ_LEN){

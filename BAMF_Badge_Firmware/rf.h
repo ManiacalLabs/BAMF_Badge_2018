@@ -57,9 +57,7 @@ void send(char *c, uint8_t l) {
     rfman.sendtoWait(c, l, RH_BROADCAST_ADDRESS);
 }
 
-#define MSG_LEN 32
+#define RF_MSG_LEN 64
 bool recv(char * buf, uint8_t * len) {
-    // uint8_t buf[MSG_LEN];
-    // uint8_t len = sizeof(buf);
     return rfman.recvfromAck(buf, len);
 }
