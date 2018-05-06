@@ -21,6 +21,8 @@
 
 #define NOTE_FAIL 460 //C2
 
+#define RAND_SEED_PIN 4 //A4
+
 #define SEQ_LEN 6
 #define SEQ_STR_LEN SEQ_LEN + 1
 
@@ -90,19 +92,23 @@ bool read_all(){
   return result;
 }
 
+void do_start_play() {
+  all_on();
+  play_tone_ms(NOTE_FAIL, 500);
+
+  while(read_all()){ delay(5); }
+
+  all_off();
+  delay(1000);
+}
+
 void check_play_hold() {
   read_all();
   if(btns[0].check_hold(PLAY_HOLD_TIME) && btns[1].check_hold(PLAY_HOLD_TIME)) {
     init_play();
     _mode = MODE_PLAY;
 
-    all_on();
-    play_tone_ms(NOTE_FAIL, 500);
-
-    while(read_all()){ delay(5); }
-
-    all_off();
-    delay(1000);
+    do_start_play();
   }
 }
 
@@ -120,32 +126,20 @@ void demo(){
 }
 
 void init_play() {
-  send("P", 1); // announce play start
   memset(seq_str, 0, SEQ_STR_LEN);
   memset(play_seq_str, 0, SEQ_STR_LEN);
   play_seq_pos = seq_pos = 0;
-  randomSeed(0);
+
+  randomSeed(analogRead(RAND_SEED_PIN));
+  for(int i=0; i<SEQ_LEN; i++) {
+    seq_str[i] = order[ random(0, 4)];
+  }
+
+  send(seq_str, SEQ_LEN); //Send play sequence
   Serial.println("Begin Play!");
 }
 
-void init_play_recv() {
-  memset(seq_str, 0, SEQ_STR_LEN);
-  memset(play_seq_str, 0, SEQ_STR_LEN);
-  play_seq_pos = seq_pos = 0;
-}
-
 void play() {
-  // all_off();
-
-  if(_mode == MODE_PLAY) {
-    // Add to and play sequence
-    seq_str[seq_pos] = order[ random(0, 4)];
-
-    send(seq_str, SEQ_STR_LEN);
-    Serial.print("Seq: ");
-    Serial.println(seq_str);
-  }
-
   static byte i;
   static byte b;
   for(i=0; i<=seq_pos; i++) {
@@ -253,12 +247,9 @@ void play() {
 
 void setup() {
   Serial.begin(115200);
-  while(!Serial){}
+  // while(!Serial){}
 
   rf_setup();
-
-  // init_play();
-  randomSeed(analogRead(4));
 }
 
 void loop() {
@@ -284,14 +275,15 @@ void loop() {
   memset(recv_buf, 0, MSG_LEN + 1);
 
   if(recv(recv_buf, &len)) {
-    Serial.print("RECV: ");
-    Serial.println(recv_buf);
-    if(recv_buf[0] == 'P'){
+    if(len >= SEQ_LEN){
+      Serial.print("RECV: ");
+      Serial.println(recv_buf);
+      memset(seq_str, 0, SEQ_STR_LEN);
+      memcpy(seq_str, recv_buf, SEQ_LEN);
       _mode = MODE_PLAY_RECV;
-    }
-    else {
-      //new sequence, copy over
-      memcpy(seq_str, recv_buf, SEQ_STR_LEN);
+      play_seq_pos = seq_pos = 0;
+
+      do_start_play();
     }
   }
 }
